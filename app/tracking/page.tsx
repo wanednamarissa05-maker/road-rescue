@@ -20,6 +20,11 @@ function TrackingContent() {
     return () => clearTimeout(timer);
   }, []);
 
+  // SOS Function
+  const handleSOS = () => {
+    window.location.href = "tel:999"; 
+  };
+
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
@@ -54,7 +59,7 @@ function TrackingContent() {
               <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Toyota Hiace • ABC 1234</p>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <div style={iconButton}><Phone size={18} color={royalBlue} /></div>
+              <div style={iconButton} onClick={() => window.location.href = "tel:0123456789"}><Phone size={18} color={royalBlue} /></div>
               <div style={iconButton}><MessageSquare size={18} color={royalBlue} /></div>
             </div>
           </div>
@@ -72,7 +77,7 @@ function TrackingContent() {
           >
             Confirm & Pay
           </button>
-          <button style={sosButton}>
+          <button onClick={handleSOS} style={sosButton}>
             <ShieldAlert size={20} />
           </button>
         </div>
@@ -81,7 +86,7 @@ function TrackingContent() {
   );
 }
 
-// STYLES - DO NOT REMOVE. This section fixes the "jumbled text" issue.
+// Styles (unchanged for consistency)
 const containerStyle = { padding: '20px', maxWidth: '450px', margin: '0 auto', minHeight: '100vh', backgroundColor: '#f8faff', display: 'flex', flexDirection: 'column' as const };
 const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', color: '#000' };
 const mapPlaceholder = { width: '100%', height: '250px', backgroundColor: '#EDF2F7', borderRadius: '28px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' };
