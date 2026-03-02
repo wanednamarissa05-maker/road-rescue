@@ -1,85 +1,81 @@
-"use client"; // Required for interactivity
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { XCircle, CheckCircle, Loader2 } from "lucide-react";
+import { supabase } from "../supabaseClient"; // This connects to your new file
 
-import { useRouter } from "next/navigation"; // Next.js router
-import { AppHeader } from "../components/AppHeader";
-import { MapPin, Clock, ShieldCheck, ChevronRight } from "lucide-react"; // Icons for details
-
-export default function ConfirmRequestPage() {
+export default function ConfirmPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirm = () => {
-    // In a real app, this would send data to a database
-    router.push("/tracking"); 
+  const handleFinalize = async () => {
+    setIsLoading(true);
+
+    try {
+      // 1. Save the request to your Supabase table
+      const { error } = await supabase
+        .from('requests')
+        .insert([
+          { 
+            service_type: 'Towing', 
+            location: 'Kuala Lumpur', 
+            status: 'pending' 
+          }
+        ]);
+
+      if (error) throw error;
+
+      // 2. Wait a brief moment so the user sees the "Searching" animation
+      setTimeout(() => {
+        router.push('/success');
+      }, 2000);
+
+    } catch (error: any) {
+      console.error("Error saving to Supabase:", error.message);
+      alert("Database Error: Make sure your 'requests' table is created in Supabase!");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col text-black">
-      <div className="max-w-md mx-auto bg-white min-h-screen w-full flex flex-col">
-        <AppHeader title="Confirm Request" showBack={true} />
-
-        <div className="p-6 flex-1 space-y-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-xl font-bold">Request Details</h2>
-            <p className="text-gray-500 text-sm">Please verify your information</p>
-          </div>
-
-          {/* Info Cards */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-              <div className="bg-blue-100 p-3 rounded-full text-blue-600">
-                <MapPin size={24} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase font-bold">Location</p>
-                <p className="font-semibold text-sm">Jalan Bukit Bintang, KL</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-              <div className="bg-green-100 p-3 rounded-full text-green-600">
-                <Clock size={24} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase font-bold">Estimated Arrival</p>
-                <p className="font-semibold text-sm">15 - 20 Minutes</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-              <div className="bg-orange-100 p-3 rounded-full text-orange-600">
-                <ShieldCheck size={24} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase font-bold">Service Type</p>
-                <p className="font-semibold text-sm">Flat Tire Replacement</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Price Breakdown */}
-          <div className="border-t border-dashed border-gray-200 pt-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Service Fee</span>
-              <span className="font-semibold">RM 50.00</span>
-            </div>
-            <div className="flex justify-between items-center text-lg font-bold">
-              <span>Total Price</span>
-              <span className="text-blue-600">RM 50.00</span>
-            </div>
-          </div>
+    <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#f9fafb' }}>
+      
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Loader2 className="animate-spin" size={48} color="#2563eb" style={{ marginBottom: '16px' }} />
+          <h1 style={{ fontSize: '20px', fontWeight: 'bold' }}>Connecting to Driver...</h1>
+          <p style={{ color: '#666' }}>Saving your request to our secure database.</p>
         </div>
-
-        {/* Action Button */}
-        <div className="p-6 bg-white border-t border-gray-100">
-          <button
-            onClick={handleConfirm}
-            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-200"
+      ) : (
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Confirm Request</h1>
+          <p style={{ color: '#666', marginBottom: '30px' }}>A professional will be dispatched to your location immediately.</p>
+          
+          <button 
+            onClick={handleFinalize}
+            style={{ 
+              width: '100%', padding: '16px', backgroundColor: '#1f2937', color: 'white', 
+              borderRadius: '12px', border: 'none', fontWeight: 'bold', fontSize: '18px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '15px', cursor: 'pointer'
+            }}
           >
-            Confirm & Pay
-            <ChevronRight size={20} />
+            <CheckCircle size={20} />
+            Finalize & Send Help
+          </button>
+
+          <button 
+            onClick={() => router.push('/')}
+            style={{ 
+              width: '100%', padding: '16px', backgroundColor: 'transparent', color: '#ef4444', 
+              borderRadius: '12px', border: '2px solid #ef4444', fontWeight: 'bold', fontSize: '18px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer'
+            }}
+          >
+            <XCircle size={20} />
+            Cancel Request
           </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
