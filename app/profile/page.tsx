@@ -1,63 +1,64 @@
-"use client"; // Required for interactivity
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, User, Mail, Phone, LogOut, Loader2 } from "lucide-react";
+import { supabase } from "../supabaseClient";
 
-import { useRouter } from "next/navigation"; // Next.js specific router
-import { AppHeader } from "../components/AppHeader";
-import { BottomNav } from "../components/BottomNav";
-import { User, Settings, CreditCard, Bell, LogOut, ChevronRight } from "lucide-react";
-
-// This "export default" line is what fixes the error
 export default function ProfilePage() {
   const router = useRouter();
+  const royalBlue = "#0561FF";
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const menuItems = [
-    { icon: User, label: "Edit Profile" },
-    { icon: CreditCard, label: "Payment Methods" },
-    { icon: Bell, label: "Notifications" },
-    { icon: Settings, label: "Settings" },
-  ];
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  if (loading) return <div style={containerStyle}><Loader2 className="animate-spin" color={royalBlue} /></div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 text-black">
-      <div className="max-w-md mx-auto bg-white min-h-screen w-full flex flex-col">
-        <AppHeader title="My Profile" showBack={false} />
-
-        {/* Profile Header */}
-        <div className="p-8 flex flex-col items-center border-b border-gray-50">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600 border-4 border-white shadow-sm">
-            <User size={48} />
-          </div>
-          <h2 className="text-xl font-bold">Zack Ariffin</h2>
-          <p className="text-gray-500 text-sm">zack.ariffin@email.com</p>
-        </div>
-
-        {/* Menu Options */}
-        <div className="p-4 flex-1">
-          <div className="space-y-2">
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition"
-              >
-                <div className="flex items-center gap-4 text-gray-700">
-                  <item.icon size={20} />
-                  <span className="font-semibold text-sm">{item.label}</span>
-                </div>
-                <ChevronRight size={18} className="text-gray-300" />
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => router.push("/login")}
-            className="w-full flex items-center gap-4 p-4 mt-8 text-red-500 hover:bg-red-50 rounded-2xl transition"
-          >
-            <LogOut size={20} />
-            <span className="font-bold text-sm">Log Out</span>
-          </button>
-        </div>
-
-        <BottomNav />
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        <ChevronLeft size={24} onClick={() => router.back()} style={{ cursor: 'pointer' }} />
+        <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#000' }}>My Profile</h1>
+        <div style={{ width: '24px' }}></div>
       </div>
+
+      <div style={profileHeader}>
+        <div style={avatarLarge}>{user?.email?.charAt(0).toUpperCase()}</div>
+        <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '10px 0', color: '#000' }}>
+          {user?.user_metadata?.full_name || "User"}
+        </h2>
+        <p style={{ color: '#666', margin: 0 }}>{user?.email}</p>
+      </div>
+
+      <div style={infoList}>
+        <div style={infoItem}><User size={20} color={royalBlue} /> <span style={{color: '#000'}}>{user?.user_metadata?.full_name}</span></div>
+        <div style={infoItem}><Mail size={20} color={royalBlue} /> <span style={{color: '#000'}}>{user?.email}</span></div>
+        <div style={infoItem}><Phone size={20} color={royalBlue} /> <span style={{color: '#000'}}>{user?.user_metadata?.phone || "No phone added"}</span></div>
+      </div>
+
+      <button onClick={handleLogout} style={logoutButtonStyle}>
+        <LogOut size={20} /> Sign Out
+      </button>
     </div>
   );
 }
+
+const containerStyle: React.CSSProperties = { padding: '20px', maxWidth: '450px', margin: '0 auto', minHeight: '100vh', backgroundColor: '#f8faff' };
+const headerStyle: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', color: '#000' };
+const profileHeader: React.CSSProperties = { textAlign: 'center', marginBottom: '40px' };
+const avatarLarge: React.CSSProperties = { width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#0561FF', color: '#fff', fontSize: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontWeight: 'bold' };
+const infoList: React.CSSProperties = { backgroundColor: '#fff', borderRadius: '24px', padding: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginBottom: '30px' };
+const infoItem: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '15px', padding: '20px', borderBottom: '1px solid #f0f0f0' };
+const logoutButtonStyle: React.CSSProperties = { width: '100%', padding: '18px', backgroundColor: '#FFF1F1', color: '#FF4D4D', borderRadius: '16px', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer' };
