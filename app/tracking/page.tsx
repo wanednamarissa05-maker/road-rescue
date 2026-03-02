@@ -1,77 +1,101 @@
-"use client"; //
+"use client";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ShieldAlert, Loader2, MapPin, Phone, MessageSquare } from "lucide-react";
 
-import { useRouter } from "next/navigation"; //
-import { AppHeader } from "../components/AppHeader";
-import { Phone, MessageSquare, Navigation, User } from "lucide-react";
-
-export default function TrackingPage() {
+function TrackingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const service = searchParams.get('service') || 'Service';
+  const royalBlue = "#0561FF";
+
+  const [status, setStatus] = useState("Finding Provider...");
+  const [isFound, setIsFound] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setStatus("Provider En Route");
+      setIsFound(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col text-black">
-      <div className="max-w-md mx-auto bg-white min-h-screen w-full flex flex-col relative">
-        <AppHeader title="Tracking Technician" />
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        <ChevronLeft size={24} onClick={() => router.back()} style={{ cursor: 'pointer' }} />
+        <h1 style={{ fontSize: '18px', fontWeight: 'bold' }}>Live Tracking</h1>
+        <div style={{ width: '24px' }}></div>
+      </div>
 
-        {/* Map Placeholder Area */}
-        <div className="flex-1 bg-blue-50 relative overflow-hidden">
-          {/* Mock Map Background */}
-          <div className="absolute inset-0 opacity-20">
-             <div className="absolute top-1/4 left-1/4 w-full h-1 bg-gray-300 rotate-45"></div>
-             <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -rotate-12"></div>
-          </div>
+      <div style={mapPlaceholder}>
+        <div style={{ textAlign: 'center' }}>
+          <MapPin size={32} color={royalBlue} className={!isFound ? "animate-bounce" : ""} />
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+            {isFound ? "Provider is 1.6km away" : "Searching for nearby help..."}
+          </p>
+        </div>
+      </div>
 
-          {/* Technician Marker */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-xl animate-bounce">
-              <Navigation className="text-white fill-current rotate-45" size={20} />
-            </div>
-            <div className="mt-2 px-3 py-1 bg-white rounded-lg shadow-md text-xs font-bold">
-              Technician Arriving
-            </div>
-          </div>
+      <div style={cardStyle}>
+        <div style={summaryHeader}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{service} Details</h2>
+          <span style={{ ...statusBadge, backgroundColor: isFound ? '#ecfdf5' : '#EBF3FF', color: isFound ? '#10b981' : royalBlue }}>
+            {!isFound && <Loader2 size={12} className="animate-spin" style={{ marginRight: '4px' }} />}
+            {status}
+          </span>
         </div>
 
-        {/* Technician Info Card */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gray-200 rounded-2xl flex items-center justify-center overflow-hidden">
-                <User size={30} className="text-gray-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">Ahmad Sulaiman</h3>
-                <p className="text-gray-500 text-sm">Pro Mechanic • 4.9 ★</p>
-              </div>
+        {isFound && (
+          <div style={providerInfo}>
+            <div style={avatarSmall}>🚗</div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 'bold', margin: 0, color: '#000' }}>Speedy Auto (Ahmad)</p>
+              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Toyota Hiace • ABC 1234</p>
             </div>
-            <div className="flex gap-2">
-              <button className="p-3 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
-                <Phone size={20} />
-              </button>
-              <button className="p-3 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
-                <MessageSquare size={20} />
-              </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={iconButton}><Phone size={18} color={royalBlue} /></div>
+              <div style={iconButton}><MessageSquare size={18} color={royalBlue} /></div>
             </div>
           </div>
+        )}
 
-          <div className="bg-gray-50 p-4 rounded-2xl">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-gray-500 text-sm">Vehicle</span>
-              <span className="font-semibold text-sm">Toyota Hiace (WQB 4432)</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-sm">Arrival Time</span>
-              <span className="font-bold text-blue-600 text-sm">12 Mins</span>
-            </div>
-          </div>
+        <div style={priceList}>
+          <div style={priceRow}><span>Service Total</span><span style={{ fontWeight: 'bold' }}>RM 83.00</span></div>
+        </div>
 
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
           <button 
-            onClick={() => router.push("/")}
-            className="w-full py-4 text-gray-400 font-semibold hover:text-red-500 transition text-sm"
+            onClick={() => router.push(`/payment?service=${service}`)} 
+            disabled={!isFound}
+            style={{ ...mainButtonStyle, backgroundColor: isFound ? royalBlue : '#cbd5e1', flex: 2 }}
           >
-            Cancel Request
+            Confirm & Pay
+          </button>
+          <button style={sosButton}>
+            <ShieldAlert size={20} />
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+// STYLES - DO NOT REMOVE. This section fixes the "jumbled text" issue.
+const containerStyle = { padding: '20px', maxWidth: '450px', margin: '0 auto', minHeight: '100vh', backgroundColor: '#f8faff', display: 'flex', flexDirection: 'column' as const };
+const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', color: '#000' };
+const mapPlaceholder = { width: '100%', height: '250px', backgroundColor: '#EDF2F7', borderRadius: '28px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' };
+const cardStyle = { backgroundColor: '#fff', padding: '24px', borderRadius: '28px', boxShadow: '0 10px 25px rgba(5, 97, 255, 0.05)' };
+const summaryHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' };
+const statusBadge = { display: 'flex', alignItems: 'center', padding: '6px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' };
+const providerInfo = { display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', backgroundColor: '#f8faff', borderRadius: '16px', marginBottom: '20px' };
+const avatarSmall = { width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid #eee' };
+const iconButton = { width: '36px', height: '36px', backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #eee', cursor: 'pointer' };
+const priceList = { borderTop: '1px solid #f1f5f9', paddingTop: '15px' };
+const priceRow = { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#1e293b' };
+const mainButtonStyle = { padding: '18px', color: '#fff', borderRadius: '16px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' };
+const sosButton = { width: '60px', backgroundColor: '#FFF1F1', color: '#FF4D4D', borderRadius: '16px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
+
+export default function TrackingPage() {
+  return <Suspense fallback={<div>Loading...</div>}><TrackingContent /></Suspense>;
 }
