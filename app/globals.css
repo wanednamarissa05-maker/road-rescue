@@ -2,44 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-body {
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
+/* ... then keep the rest of your code below ... */
+/* Standard Reset - No Tailwind directives to prevent build errors */
+html, body {
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  padding: 0;
+  background-color: #f8faff;
+  font-family: Arial, sans-serif;
 }
 
-/* THE NUCLEAR FIX FOR THE GIANT LOGO */
-/* This forces any image inside the auth container to stay small */
-.auth-container img, 
-img[src*="google"], 
-.supabase-auth-ui_ui-button img {
+/* THE GIANT LOGO KILLER */
+.auth-container img {
   width: 24px !important;
   height: 24px !important;
   max-width: 24px !important;
-  min-width: 24px !important;
   display: inline-block !important;
   object-fit: contain !important;
 }
 
-/* Fixes the button layout so the text doesn't disappear */
+/* Fixes the button layout */
 .supabase-auth-ui_ui-button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
-  padding: 12px !important;
+  height: 48px !important;
   border-radius: 12px !important;
-}
-
-/* Removes those yellow warnings in VS Code */
-@layer base {
-  * {
-    @apply border-border;
-  }
+  border: 1px solid #ddd !important;
+  background-color: white !important;
+  color: black !important;
+  width: 100% !important;
+  margin-top: 10px !important;
 }
